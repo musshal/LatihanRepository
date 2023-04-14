@@ -34,10 +34,16 @@ class NewsFragment : Fragment() {
             factory
         }
 
-        val newsAdapter = NewsAdapter()
+        val newsAdapter = NewsAdapter { news ->
+            if (news.isBookmarked){
+                viewModel.deleteNews(news)
+            } else {
+                viewModel.saveNews(news)
+            }
+        }
 
         if (tabName == TAB_NEWS) {
-            viewModel.getHeadlineNews().observe(viewLifecycleOwner) {result ->
+            viewModel.getHeadlineNews().observe(viewLifecycleOwner) { result ->
                 if (result != null) {
                     when (result) {
                         is Loading -> {
@@ -59,8 +65,13 @@ class NewsFragment : Fragment() {
                     }
                 }
             }
+        } else if (tabName == TAB_BOOKMARK) {
+            viewModel.getBookmarkedNews().observe(viewLifecycleOwner) { bookmarkedNews ->
+                binding?.progressBar?.visibility = View.GONE
+                newsAdapter.submitList(bookmarkedNews)
+            }
         }
-        
+
         binding?.rvNews?.apply {
             layoutManager = LinearLayoutManager(context)
             setHasFixedSize(true)
